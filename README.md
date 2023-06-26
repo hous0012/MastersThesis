@@ -10,4 +10,3 @@ The repository contains three scripts, each mirroring a particular theoretical d
   - `bFPCA.jl` may be used to perform bFPCA (Bivariate Functional Principal Components Analysis) based on user-specified bivariate functional data. The bivariate functional data needs to be constructed using the `ReparameterizedCurves.jl` script.
 
 Each script includes an illustrative example demonstrating its usage.
-  
