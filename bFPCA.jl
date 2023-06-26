@@ -237,7 +237,7 @@ let
         KarhunenLoeve2 += foo_res.scores[i][SampleNo]*[v[2] for v in foo_res.eigenfunctions[i]]
     end
 
-    plot(map(fundataExample[!, "SDCurve"][SampleNo].η, t0), map(fundataExample[!, "SDCurve"][SampleNo].SDCurve, t0), linecolor = :black, label = "Supply$SampleNo")
+    plot(map(fundataExample[!, "SDCurve"][SampleNo].η, t0), map(fundataExample[!, "SDCurve"][SampleNo].SDCurve, t0), linecolor = :black, label = "SupplyExample$SampleNo", xlabel = "Quantity", ylabel = "Price")
     plot!(KarhunenLoeve1, KarhunenLoeve2, line = (:dash, "red"), label = "Reconstructed")
     plot!(grid = false)
 end
