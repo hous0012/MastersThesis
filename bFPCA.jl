@@ -1,4 +1,4 @@
-using LinearAlgebra, Statistics, Dates, DataFrames
+using LinearAlgebra, Statistics, Dates, DataFrames, Base.Threads
 
 # Defining structure to save results in bFPCA procedure
 struct bFPCA_struct
@@ -66,8 +66,12 @@ function bFPCA(fundata::DataFrame, n_gridpoints::Int; weights = false)
     eig = eigen(sqrtW * V * sqrtW);
 
     # Recovering eigenfunctions
-    all_eigf = [[(invsqrtW * real.(eig.vectors))[i:i+1, j]  for i in 1:2:size(V, 1)] for j in axes(V, 2)];
-
+    all_eigf = Vector(undef, size(V, 2));
+    
+    Threads.@threads for j in axes(V, 2)
+        all_eigf[j] = [(invsqrtW * real.(eig.vectors))[i:i+1, j]  for i in 1:2:size(V, 1)]
+    end
+    
     # Recovering eigenvalues; recall must be non-negative.
     # Also, sorting eigenvalues from largest to smallest (descending).
     # Note that Julia follows LAPACK so eigenvalues are by 
