@@ -2,8 +2,8 @@ using LinearAlgebra, Statistics, Dates, DataFrames
 
 # Defining structure to save results in bFPCA procedure
 struct bFPCA_struct
-    mean_fun::Vector{Vector}
-    cov_fun::Matrix
+    mean::Vector{Vector}
+    cov::Matrix
     eigenvalues::Vector
     eigenfunctions::Vector{Vector{Vector}}
     scores::Vector{Vector}
@@ -12,7 +12,7 @@ struct bFPCA_struct
 end
 
 # Defining function to carry out bFPCA procedure
-function bFPCA(fundata::DataFrame, n_gridpoints::Int, n_fpcs; weights = false)
+function bFPCA(fundata::DataFrame, n_gridpoints::Int; weights = false)
     # Ensuring that "fundata" is constructed correctly specified
     @assert eltype(fundata[:,1]) == Date
     @assert eltype(fundata[:,2]) == Z  
@@ -40,7 +40,7 @@ function bFPCA(fundata::DataFrame, n_gridpoints::Int, n_fpcs; weights = false)
     # Computing partition length
     Δ = 1 / n_gridpoints;
 
-    # Constructing weight matrix (if "weight == true")
+    # Constructing weight matrix
     if(weights == true)
         # Recovering variance componentwise
         K11 = diag(V)[1:2:size(V, 1)];
@@ -58,9 +58,9 @@ function bFPCA(fundata::DataFrame, n_gridpoints::Int, n_fpcs; weights = false)
         W = Diagonal(repeat([w1, w2], outer = n_gridpoints));
         sqrtW = Diagonal(repeat([sqrt(w1), sqrt(w2)], outer = n_gridpoints));
         invsqrtW = Diagonal(repeat([1 / sqrt(w1), 1 / sqrt(w2)], outer = n_gridpoints));
+    else
+        W = sqrtW = invsqrtW = I    # Set weight matrices equal to identity
     end
-
-    W = sqrtW = invsqrtW = I    # Set weight matrices equal to identity if "weights == false"
 
     # Solving eigenproblem
     eig = eigen(sqrtW * V * sqrtW);
@@ -78,7 +78,7 @@ function bFPCA(fundata::DataFrame, n_gridpoints::Int, n_fpcs; weights = false)
     eigf = all_eigf[ind_sorted_nn_eigv];
 
     # Computing scores
-    scores = [boldX * W * vcat(eigf[i]...) for i in 1:n_fpcs];
+    scores = [boldX * W * vcat(eigf[i]...) for i eachindex(ind_sorted_nn_eigv)];
     
     # FVE
     FVE = [eigv[i] / sum(eigv) for i in eachindex(eigv)];
@@ -145,7 +145,7 @@ let
         plot!(map(fundataExample[!, "SDCurve"][i].η, t0), map(fundataExample[!, "SDCurve"][i].SDCurve, t0), linealpha = 1, label = labels[i])
     end
 
-    plot!([v[1] for v in res.mean_fun], [v[2] for v in res.mean_fun], line = "black", label = "Mean")
+    plot!([v[1] for v in res.mean], [v[2] for v in res.mean], line = "black", label = "Mean")
     plot!(xlabel = "Quantity", ylabel = "Price", grid = false)   
 end
 
@@ -156,12 +156,12 @@ let
     default(size = (600, 400))
     default(fontfamily = "Computer Modern", titlefontsize = 9, guidefontsize = 9, tickfontsize = 5, legendfontsize = 9, linewidth = 2)
 
-    foo = size(res.cov_fun, 1)
+    foo = size(res.cov, 1)
 
-    Cov11 = res.cov_fun[1:2:foo, 1:2:foo]
-    Cov22 = res.cov_fun[2:2:foo, 2:2:foo]
-    Cov12 = res.cov_fun[2:2:foo, 1:2:foo]
-    Cov21 = res.cov_fun[1:2:foo, 2:2:foo]
+    Cov11 = res.cov[1:2:foo, 1:2:foo]
+    Cov22 = res.cov[2:2:foo, 2:2:foo]
+    Cov12 = res.cov[2:2:foo, 1:2:foo]
+    Cov21 = res.cov[1:2:foo, 2:2:foo]
 
     Y = reshape(repeat(t0, outer = n_gridpoints), n_gridpoints, :);
     X = Y';
@@ -229,8 +229,8 @@ let
 
     foo_res = bFPCA(fundata, n_gridpoints, TruncationOrder) # Run bFPCA procedure again so that "n_fpcs = TruncationOrder"
 
-    KarhunenLoeve1 = [v[1] for v in foo_res.mean_fun]
-    KarhunenLoeve2 = [v[2] for v in foo_res.mean_fun]
+    KarhunenLoeve1 = [v[1] for v in foo_res.mean]
+    KarhunenLoeve2 = [v[2] for v in foo_res.mean]
 
     for i in 1:TruncationOrder
         KarhunenLoeve1 += foo_res.scores[i][SampleNo]*[v[1] for v in foo_res.eigenfunctions[i]]
