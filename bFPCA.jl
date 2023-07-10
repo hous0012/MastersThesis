@@ -126,9 +126,8 @@ end
 # Performing bFPCA
 fundata = fundataExample
 n_gridpoints = 100
-n_fpcs = 3
 
-res = bFPCA(fundata, n_gridpoints, n_fpcs);
+res = bFPCA(fundata, n_gridpoints, weights = false);
 
 ## Visualizing results
 t0 = LinRange(0, 1, n_gridpoints+1)  
@@ -231,14 +230,12 @@ let
     SampleNo = 3
     TruncationOrder = 10
 
-    foo_res = bFPCA(fundata, n_gridpoints, TruncationOrder) # Run bFPCA procedure again so that "n_fpcs = TruncationOrder"
-
-    KarhunenLoeve1 = [v[1] for v in foo_res.mean]
-    KarhunenLoeve2 = [v[2] for v in foo_res.mean]
+    KarhunenLoeve1 = [v[1] for v in res.mean]
+    KarhunenLoeve2 = [v[2] for v in res.mean]
 
     for i in 1:TruncationOrder
-        KarhunenLoeve1 += foo_res.scores[i][SampleNo]*[v[1] for v in foo_res.eigenfunctions[i]]
-        KarhunenLoeve2 += foo_res.scores[i][SampleNo]*[v[2] for v in foo_res.eigenfunctions[i]]
+        KarhunenLoeve1 += res.scores[i][SampleNo]*[v[1] for v in res.eigenfunctions[i]]
+        KarhunenLoeve2 += res.scores[i][SampleNo]*[v[2] for v in res.eigenfunctions[i]]
     end
 
     plot(map(fundataExample[!, "SDCurve"][SampleNo].η, t0), map(fundataExample[!, "SDCurve"][SampleNo].SDCurve, t0), linecolor = :black, label = "SupplyExample$SampleNo", xlabel = "Quantity", ylabel = "Price")
