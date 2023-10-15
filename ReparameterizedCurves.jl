@@ -6,7 +6,7 @@ begin
 	end
 
     # This function "η" constructs an instance of "H" given a "SupplyDemandCurve". 
-	# The interval of the function starts from the "startpoint" of the first interval
+    # The interval of the function starts from the "startpoint" of the first interval
     # and ends in the "endpoint" of the last interval of the "SupplyDemandCurve"
 	η(SDCurve::SupplyDemandCurve{R,Q}) where {R, Q <: Real} = begin
 		a, b = startpoint(SDCurve.Intervals[1]), endpoint(SDCurve.Intervals[end])
@@ -20,7 +20,7 @@ begin
 	end
 
     # Defining an "∘" operator to compose a "SupplyDemandCurve" and a function "η". 
-	# The result is a new "SupplyDemandCurve" where the quantities have been scaled to the interval [0, 1].
+    # The result is a new "SupplyDemandCurve" where the quantities have been scaled to the interval [0, 1].
     import Base:
 			∘
     
